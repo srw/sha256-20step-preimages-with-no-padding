@@ -124,3 +124,44 @@ Executed on a 16-vCPU x86_64 VM (128 GiB RAM, `--q-bits 32 --left-bits 32 --thre
   - Exact 19-round solutions ($\rho_{16} = \rho_{17} = \rho_{18} = 0$): `2,735,408,772` ($\approx 2^{31.35}$)
   - Empirical survival rate from bridge match to exact 19-round solution: `2,735,408,772 / 4,316,790,709 = 0.633667` (matching the theoretical image density of $Q_0$ and confirming **zero $\beta$-filter loss**)
   - Wall-clock search time to 20-round solution: **`1266.26 s` (`21.1 minutes`)**
+
+---
+
+## 6. Why Single-Block 20-Step Padded SHA-256 Requires a Different Regime
+
+In the companion repository
+[`srw/sha256-19step-preimages-with-padding`](https://github.com/srw/sha256-19step-preimages-with-padding),
+we solved 19-step SHA-256 **with full FIPS 180-4 single-block padding** (55-byte messages, where
+$W_{14} = 0$, $W_{15} = \mathtt{0x000001b8} = 440$, and $\mathrm{LSB}(W_{13}) = \mathtt{0x80}$) in
+$\sim 2^{25.3}$ work on one CPU core. Why does moving from 19 steps to 20 steps change the padded
+regime?
+
+1. **Degree-of-freedom counting on the Zero-$a_3$ Manifold:**
+   - The Zero-$a_3$ Manifold fixes 6 internal words ($a_3, a_5, a_6, a_8, a_9 = 0$, $a_{10} = \mathtt{0xffffffff}$),
+     leaving 3 Left/Bridge words $(a_1, a_2, a_4)$ and 3 Right words $(a_7, a_{11}, a_{12})$.
+   - For the **unpadded 20-step compression function**, the 4 schedule constraints
+     $\rho_{16} = \rho_{17} = \rho_{18} = \rho_{19} = 0$ (128 bits) are met by the 6 active words
+     (192 bits), leaving a $2^{64}$ solution manifold. Here $a_7$ is solved via $Q_1^{-1}$ from
+     $\rho_{16} = 0$, while $(a_{11}, a_{12})$ provides the $2^{64}$ Right search space needed to
+     hit the 32-bit filter $\rho_{19} = 0$ (and bridge match).
+   - If we additionally impose single-block length padding $W_{14} = 0$ and $W_{15} = 440$ on the
+     Zero-$a_3$ Manifold:
+     - $W_{14}(a_7, a_{11}, a_{12}) = D_{14}(a_{11}, a_{12}) - a_7 = 0$ fixes $a_7 = D_{14}(a_{11}, a_{12})$.
+     - Substituting $W_{14} = 0$ into $\rho_{16} = 0$ forces $D_{14}(a_{11}, a_{12}) = T_{16}^* + W_{9,0} - W_{16}(a_{12})$,
+       and $W_{15}(a_7, a_{11}, a_{12}) = 440$ imposes a second 32-bit constraint on $(a_{11}, a_{12})$.
+     - Together, $W_{14} = 0$ and $W_{15} = 440$ consume 64 bits of Right-side freedom, collapsing
+       the Right search space on a fixed Zero-$a_3$ manifold from $2^{64}$ to a discrete set of size
+       $O(1)$, whereas satisfying $\rho_{19} = 0$ plus $\mathrm{LSB}(W_{13}) = \mathtt{0x80}$ requires
+       40 bits of filtering ($\sim 2^{40}$ trials).
+
+2. **Resulting complexities for 20-step padded SHA-256:**
+   - **Single-block 20-step padded ($\sim 2^{64}$):** By relaxing two of the fixed manifold words
+     (or using general context shaping where $W_{14} = 0$ and $W_{15} = 440$ linearly absorb $a_7$
+     and $a_8$ via $-e_{11}$ and $-e_{12}$), one restores the $2^{64}$ search space, at the cost of
+     losing the simultaneous Zero-$a_3$ / $Q_1$ shortcut. This yields an expected complexity of
+     $\sim 2^{64}$ (feasible on a GPU cluster, compared to $2^{256}$ brute force).
+   - **Two-block 20-step padded ($\sim 2^{39}$):** For a two-block padded message, the first block
+     has **no padding constraints** ($W_0 \dots W_{15}$ are 64 free bytes), while the second block
+     is padded. Using a bi-directional meet-in-the-middle attack between Forward Block 1 and a
+     padded Block 2, a 2-block 20-step padded preimage can be found in $\sim 2^{39}$ work.
+

@@ -136,6 +136,27 @@ Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
      invert $Q_0(W_3)$ to get $a_4$ (satisfying $\rho_{18} = 0$ with **zero $\beta$-filter loss**,
      yielding **2.16 million exact 19-round solutions/sec**), and check $\rho_{19} = 0$.
 
+## Scope: Compression Function vs. Padded Hash Function at 20 Steps
+
+- **19 steps with padding ($\sim 2^{25.3}$, solved on 1 CPU core):**
+  In [srw/sha256-19step-preimages-with-padding](https://github.com/srw/sha256-19step-preimages-with-padding),
+  we solved single-block 55-byte padded messages ($W_{14} = 0$, $W_{15} = \mathtt{0x000001b8}$,
+  $\mathrm{LSB}(W_{13}) = \mathtt{0x80}$). At 19 steps ($a_{12} \dots a_{19}$ fixed by the target),
+  $W_{14}$ and $W_{15}$ linearly absorb $a_7$ and $a_8$ via $-e_{11}$ and $-e_{12}$, leaving enough
+  Right degrees of freedom alongside the three Left pivots $(a_2, a_3, a_4)$.
+- **20 steps without padding ($\sim 2^{33}$, solved here):**
+  For the 20-step compression function ($W_0 \dots W_{15}$ unconstrained), the target shifts by one
+  round ($a_{13} \dots a_{20}$ fixed), so $a_{12}$ becomes an active variable and a fourth schedule
+  constraint $\rho_{19} = 0$ appears. The Zero-$a_3$ bridge uses $(a_{11}, a_{12})$ as the $2^{64}$
+  Right search space and $a_7$ as the $Q_1^{-1}$ pivot.
+- **Why single-block 20 steps *with* padding is harder ($\sim 2^{64}$ single-block, $\sim 2^{39}$ two-block):**
+  Imposing $W_{14} = 0$ and $W_{15} = 440$ at 20 steps pins two of the three Right variables
+  $(a_7, a_{11}, a_{12})$, collapsing the $2^{64}$ Right search space on the fixed Zero-$a_3$
+  manifold to a single curve of $2^{32}$ states (whereas 20-step + 8-bit padding requires $\sim 2^{40}$
+  trials). Overcoming this for a single-block 20-step padded message requires either $\sim 2^{64}$
+  work across unshaped contexts (where $W_{14}=0, W_{15}=440$ absorb two variables in $O(1)$) or a
+  2-block meet-in-the-middle construction in $\sim 2^{39}$.
+
 ## Layout
 
 | path | contents |
