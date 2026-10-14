@@ -1,0 +1,5 @@
+# 20-step SHA-256 compression preimage witnesses (standard IV, 256-bit match at R = 20)
+
+[comp] label="custom_256bit_hex_pattern"
+target   = deadbeefcafebabe0123456789abcdeffedcba987654321013579bdf2468ace0
+W[0..15] = 4334d956 6eccece1 6727a1b2 d85811af 890c5399 79018a3b d346b94d 5f26009b 7562d311 0bfd80d5 1f8c38f4 16d8315d e0353aa2 6adf4bd2 a2bf14a2 801ae8f7

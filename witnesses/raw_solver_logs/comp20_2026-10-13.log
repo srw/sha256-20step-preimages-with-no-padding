@@ -1,0 +1,32 @@
+Zero-a3 Bi-Directional Bridge Solver (w = 32)
+  Q0/Q1 tables : 2^32 entries each (32.00 GB total)
+  Left table   : 2^32 entries      (16.00 GB total)
+  Threads      : 16
+  [1/3] Built Q0/Q1 tables in 26.36 s
+  [2/3] Phase 1 Left Bridge complete in 33.05 s (2721604389 valid left pairs)
+  [Progress 5.5s] bridge_matches=18535433 | exact_19round_sols=11746000 (2152845.10/s)
+  [Progress 61.1s] bridge_matches=208064802 | exact_19round_sols=131835190 (2157631.92/s)
+  [Progress 300.6s] bridge_matches=1024886730 | exact_19round_sols=649438411 (2160257.15/s)
+  [Progress 600.8s] bridge_matches=2048395219 | exact_19round_sols=1298004507 (2160461.42/s)
+  [Progress 900.4s] bridge_matches=3069702811 | exact_19round_sols=1945174880 (2160336.51/s)
+  [Progress 1200.5s] bridge_matches=4092488534 | exact_19round_sols=2593268204 (2160153.20/s)
+  [Progress 1261.2s] bridge_matches=4299525729 | exact_19round_sols=2724468186 (2160198.17/s)
+
+=== FOUND FULL 20-ROUND SHA-256 SOLUTION (forward_ok=1) ===
+  W[ 0] = 0x4334d956
+  W[ 1] = 0x6eccece1
+  W[ 2] = 0x6727a1b2
+  W[ 3] = 0xd85811af
+  W[ 4] = 0x890c5399
+  W[ 5] = 0x79018a3b
+  W[ 6] = 0xd346b94d
+  W[ 7] = 0x5f26009b
+  W[ 8] = 0x7562d311
+  W[ 9] = 0x0bfd80d5
+  W[10] = 0x1f8c38f4
+  W[11] = 0x16d8315d
+  W[12] = 0xe0353aa2
+  W[13] = 0x6adf4bd2
+  W[14] = 0xa2bf14a2
+  W[15] = 0x801ae8f7
+  [3/3] Phase 2 finished in 1266.26 s (bridge_matches=4316790709, exact_19round_sols=2735408772)

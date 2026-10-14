@@ -1,0 +1,6 @@
+.DS_Store
+solve20_zero_a3
+src/solve20_zero_a3
+*.o
+*.dSYM/
+__pycache__/
