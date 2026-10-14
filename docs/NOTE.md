@@ -11,14 +11,14 @@ operations**.
 
 In K. S. Basra's 20-round context-shaping attack (*Context Shaping for 19- and 20-Round SHA-256
 Compression Preimages*, September 2026), solving the three 19-round schedule equations leaves a
-32-bit bitwise residual condition $R = \operatorname{Maj}(a_5, a_4, a_3) - a_4 = 0$ that holds with
+32-bit bitwise residual condition $R = \mathrm{Maj}(a_5, a_4, a_3) - a_4 = 0$ that holds with
 probability $(3/4)^{32} \approx 2^{-13.28}$, leading to an overall 20-round cost of $\sim 2^{45.4}$
 table lookups (2.45 to 16.16 GPU-hours).
 
-By moving to a **Zero-$a_3$ Manifold** ($a_3 = a_5 = a_6 = a_8 = a_9 = 0,\ a_{10} = \texttt{0xffffffff}$)
+By moving to a **Zero-$a_3$ Manifold** ($a_3 = a_5 = a_6 = a_8 = a_9 = 0,\ a_{10} = \mathtt{0xffffffff}$)
 and swapping the role of the $a_3$ Left pivot with the $a_7$ Right variable:
 1. Both majority terms involving $a_4$ vanish **identically for all $a_4 \in [0, 2^{32})$**:
-   $$\operatorname{Maj}(a_5, a_4, a_3) = 0, \qquad \operatorname{Maj}(a_6, a_5, a_4) = 0,$$
+   $$\mathrm{Maj}(a_5, a_4, a_3) = 0, \qquad \mathrm{Maj}(a_6, a_5, a_4) = 0,$$
    eliminating the $2^{13.28}$ $\beta$-filter penalty completely.
 2. In the first schedule constraint $\rho_{16} = 0$, the variable $a_7$ enters both $\sigma_1(W_{14})$
    and $W_9$ with signs that combine into $Q_1(u) = \sigma_1(u) + u$ at $u = D_{14}(a_{11}, a_{12}) - a_7$,
@@ -37,8 +37,8 @@ preimage after **`1266.26 s` (21.1 minutes)** (`4,316,790,709` bridge matches $\
 
 Using the $a$-sequence representation (see the companion 19-step note in
 [`srw/sha256-19step-preimages-with-padding`](https://github.com/srw/sha256-19step-preimages-with-padding)):
-$$e_t = a_t - \Sigma_0(a_{t-1}) - \operatorname{Maj}(a_{t-1}, a_{t-2}, a_{t-3}) + a_{t-4} \pmod{2^{32}},$$
-$$W_t = a_{t+1} - \Sigma_0(a_t) - \operatorname{Maj}(a_t, a_{t-1}, a_{t-2}) - e_{t-3} - \Sigma_1(e_t) - \operatorname{Ch}(e_t, e_{t-1}, e_{t-2}) - K_t \pmod{2^{32}}.$$
+$$e_t = a_t - \Sigma_0(a_{t-1}) - \mathrm{Maj}(a_{t-1}, a_{t-2}, a_{t-3}) + a_{t-4} \pmod{2^{32}},$$
+$$W_t = a_{t+1} - \Sigma_0(a_t) - \mathrm{Maj}(a_t, a_{t-1}, a_{t-2}) - e_{t-3} - \Sigma_1(e_t) - \mathrm{Ch}(e_t, e_{t-1}, e_{t-2}) - K_t \pmod{2^{32}}.$$
 
 For $R = 20$ steps:
 - `IV` fixes $a_{-7} \dots a_0$ (and $e_{-3} \dots e_0$).
@@ -51,7 +51,7 @@ For $R = 20$ steps:
 ### 2.1 Defining the Zero-$a_3$ Manifold
 
 Fix the six internal words:
-$$a_3 = 0, \quad a_5 = 0, \quad a_6 = 0, \quad a_8 = 0, \quad a_9 = 0, \quad a_{10} = \texttt{0xffffffff}.$$
+$$a_3 = 0, \quad a_5 = 0, \quad a_6 = 0, \quad a_8 = 0, \quad a_9 = 0, \quad a_{10} = \mathtt{0xffffffff}.$$
 The remaining six active state words are:
 - **Left / Bridge variables:** $(a_1, a_2)$
 - **Level-3 pivot:** $a_4$
@@ -59,16 +59,16 @@ The remaining six active state words are:
 
 **Lemma 1 (Exact Decoupling of $a_4$ with Zero $\beta$-Filter Loss).**
 On the Zero-$a_3$ Manifold, for all $(a_1, a_2, a_4, a_7, a_{11}, a_{12}) \in (\mathbb{Z}/2^{32}\mathbb{Z})^6$:
-1. $\operatorname{Maj}(a_5, a_4, a_3) = \operatorname{Maj}(0, a_4, 0) = 0$ and $\operatorname{Maj}(a_6, a_5, a_4) = \operatorname{Maj}(0, 0, a_4) = 0$.
-2. $e_6 = a_2$, $e_7 = a_7$, $e_8 = -\Sigma_0(a_7) + a_4$, $e_9 = 0$, and $e_{10} = \texttt{0xffffffff}$.
-3. Because $e_9 = 0$ and $e_{10} = \texttt{0xffffffff}$:
-   - In $W_9$: $\operatorname{Ch}(e_9, e_8, e_7) = \operatorname{Ch}(0, e_8, e_7) = e_7 = a_7$, and $-e_6 = -a_2$. Thus
+1. $\mathrm{Maj}(a_5, a_4, a_3) = \mathrm{Maj}(0, a_4, 0) = 0$ and $\mathrm{Maj}(a_6, a_5, a_4) = \mathrm{Maj}(0, 0, a_4) = 0$.
+2. $e_6 = a_2$, $e_7 = a_7$, $e_8 = -\Sigma_0(a_7) + a_4$, $e_9 = 0$, and $e_{10} = \mathtt{0xffffffff}$.
+3. Because $e_9 = 0$ and $e_{10} = \mathtt{0xffffffff}$:
+   - In $W_9$: $\mathrm{Ch}(e_9, e_8, e_7) = \mathrm{Ch}(0, e_8, e_7) = e_7 = a_7$, and $-e_6 = -a_2$. Thus
      $$W_9 = W_{9,0} - a_7 - a_2,$$
      which is **completely independent of $a_4, a_{11}, a_{12}$**.
-   - In $W_{10}$: $\operatorname{Ch}(e_{10}, e_9, e_8) = \operatorname{Ch}(\texttt{0xffffffff}, 0, e_8) = 0$, and $e_{11} - a_7 = a_{11} - \Sigma_0(a_{10})$ depends only on $a_{11}$. Since $-e_7 = -a_7$,
+   - In $W_{10}$: $\mathrm{Ch}(e_{10}, e_9, e_8) = \mathrm{Ch}(\mathtt{0xffffffff}, 0, e_8) = 0$, and $e_{11} - a_7 = a_{11} - \Sigma_0(a_{10})$ depends only on $a_{11}$. Since $-e_7 = -a_7$,
      $$W_{10} = W_{10,0}(a_{11}) - a_7,$$
      which is **completely independent of $a_1, a_2, a_4, a_{12}$**.
-   - In $W_{11}$: $\operatorname{Ch}(e_{11}, e_{10}, e_9) = \operatorname{Ch}(e_{11}, \texttt{0xffffffff}, 0) = e_{11}$, and $-e_8 = \Sigma_0(a_7) - a_4$. Thus
+   - In $W_{11}$: $\mathrm{Ch}(e_{11}, e_{10}, e_9) = \mathrm{Ch}(e_{11}, \mathtt{0xffffffff}, 0) = e_{11}$, and $-e_8 = \Sigma_0(a_7) - a_4$. Thus
      $$W_{11} = W_{11,0}(a_7, a_{11}, a_{12}) - a_4.$$
    - Words $W_{12} \dots W_{19}$ do not depend on $a_1, a_2, a_4$ at all.
 
@@ -98,16 +98,16 @@ $$Q_1(u) = \widetilde{C}_{16}(a_{11}, a_{12}) - T_{16}^* \implies u = Q_1^{-1}\!
    Sweep $u \in [0, 2^{32})$ and populate `g_q0_inv[Q0(u)] = u` and `g_q1_inv[Q1(u)] = u`. Each map covers $\approx 63.37\%$ of $\mathbb{Z}/2^{32}\mathbb{Z}$.
 
 2. **Phase 1 (Build Left Bridge Table `g_left_a1`, $16\text{ GiB}$):**
-   Fix $T_{16}^* = \texttt{0x12345678}$. For each $a_1 \in [0, 2^{32})$:
+   Fix $T_{16}^* = \mathtt{0x12345678}$. For each $a_1 \in [0, 2^{32})$:
    - Look up $W_1 = Q_0^{-1}(T_{16}^* - W_0(a_1) + G_1(a_1))$.
    - If valid, set $a_2 = W_1 + G_1(a_1)$, compute $L_{17} = \sigma_0(W_2(a_1, a_2)) + W_1$, and store `g_left_a1[L17] = a1`.
    - Crucially, Phase 0 and Phase 1 depend **only on `IV` and $T_{16}^*$**, and are **completely independent of $H^*$**.
 
 3. **Phase 2 (Right Sweep & Level-3 Exact Solve):**
    Sweep $(a_{11}, a_{12}) \in [0, 2^{32})^2$ across threads:
-   - **Step 2a ($\rho_{16} = 0$):** Compute $\widetilde{C}_{16}(a_{11}, a_{12})$ at $a_7 = 0$, look up $u = \text{g\_q1\_inv}[\widetilde{C}_{16} - T_{16}^*]$, and set $a_7 = D_{14} - u$.
-   - **Step 2b ($\rho_{17} = 0$):** Compute $T_{17} = W_{17} - \sigma_1(W_{15}(a_7, a_{11}, a_{12})) - W_{10,0}(a_{11}) + a_7$ and look up $a_1 = \text{g\_left\_a1}[T_{17}]$. Every hit satisfies both $\rho_{16} = 0$ and $\rho_{17} = 0$.
-   - **Step 2c ($\rho_{18} = 0$, zero $\beta$-filter loss):** Reconstruct $(W_1, a_2, W_2)$ from $a_1$, compute $T_{18} = W_{18} - \sigma_1(W_{16}) - W_{11,0}(a_7, a_{11}, a_{12})$, and look up $W_3 = \text{g\_q0\_inv}[T_{18} - W_2 + G_3]$. Setting $a_4 = W_3 + G_3$ gives an **exact 19-round solution** ($\rho_{16} = \rho_{17} = \rho_{18} = 0$) with probability $1$.
+   - **Step 2a ($\rho_{16} = 0$):** Compute $\widetilde{C}_{16}(a_{11}, a_{12})$ at $a_7 = 0$, look up `u = g_q1_inv[C16 - T16*]`, and set $a_7 = D_{14} - u$.
+   - **Step 2b ($\rho_{17} = 0$):** Compute $T_{17} = W_{17} - \sigma_1(W_{15}(a_7, a_{11}, a_{12})) - W_{10,0}(a_{11}) + a_7$ and look up `a1 = g_left_a1[T17]`. Every hit satisfies both $\rho_{16} = 0$ and $\rho_{17} = 0$.
+   - **Step 2c ($\rho_{18} = 0$, zero $\beta$-filter loss):** Reconstruct $(W_1, a_2, W_2)$ from $a_1$, compute $T_{18} = W_{18} - \sigma_1(W_{16}) - W_{11,0}(a_7, a_{11}, a_{12})$, and look up `W3 = g_q0_inv[T18 - W2 + G3]`. Setting $a_4 = W_3 + G_3$ gives an **exact 19-round solution** ($\rho_{16} = \rho_{17} = \rho_{18} = 0$) with probability $1$.
    - **Step 2d ($\rho_{19} = 0$):** Check whether $\rho_{19} = 0$. Each exact 19-round solution satisfies $\rho_{19} = 0$ with probability $2^{-32}$.
 
 ---

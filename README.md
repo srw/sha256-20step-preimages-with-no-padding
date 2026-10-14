@@ -96,27 +96,27 @@ You can also pass any 64-hex-character 256-bit target digest via `--target`:
 Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
 
 1. **Why earlier 20-step context shaping cost $\sim 2^{45.4}$.**
-   In standard context shaping ($a_5 = a_6$, $e_9 = e_{10} = \texttt{0xffffffff}$), solving the three
+   In standard context shaping ($a_5 = a_6$, $e_9 = e_{10} = \mathtt{0xffffffff}$), solving the three
    19-step constraints $\rho_{16} = \rho_{17} = \rho_{18} = 0$ leaves a nonlinear residual condition
-   $$R = \operatorname{Maj}(a_5, a_4, a_3) - a_4 = 0,$$
+   $$R = \mathrm{Maj}(a_5, a_4, a_3) - a_4 = 0,$$
    which holds with probability $(3/4)^{32} \approx 2^{-13.28}$. Adding the 20th-step constraint
    $\rho_{19} = 0$ ($2^{-32}$) gives an expected complexity of $2^{32 + 13.28} = 2^{45.28}$ (plus
    $Q^{-1}$ table-coverage factors).
 
 2. **The Zero-$a_3$ Manifold (zero $\beta$-filter loss).**
    We place the internal state on the **Zero-$a_3$ Manifold**:
-   $$a_3 = 0, \quad a_5 = 0, \quad a_6 = 0, \quad a_8 = 0, \quad a_9 = 0, \quad a_{10} = \texttt{0xffffffff}.$$
+   $$a_3 = 0, \quad a_5 = 0, \quad a_6 = 0, \quad a_8 = 0, \quad a_9 = 0, \quad a_{10} = \mathtt{0xffffffff}.$$
    Because $a_3 = a_5 = a_6 = 0$, both majority terms involving $a_4$ vanish **identically for 100%
    of $a_4 \in [0, 2^{32})$**:
-   $$\operatorname{Maj}(a_5, a_4, a_3) = \operatorname{Maj}(0, a_4, 0) = 0, \qquad \operatorname{Maj}(a_6, a_5, a_4) = \operatorname{Maj}(0, 0, a_4) = 0.$$
-   Furthermore, $e_9 = 0$ and $e_{10} = \texttt{0xffffffff}$ hold automatically, decoupling $a_4$ from
+   $$\mathrm{Maj}(a_5, a_4, a_3) = \mathrm{Maj}(0, a_4, 0) = 0, \qquad \mathrm{Maj}(a_6, a_5, a_4) = \mathrm{Maj}(0, 0, a_4) = 0.$$
+   Furthermore, $e_9 = 0$ and $e_{10} = \mathtt{0xffffffff}$ hold automatically, decoupling $a_4$ from
    $W_9 \dots W_{19}$.
 
 3. **Role-Swapping $a_3 \leftrightarrow a_7$ and the $\sigma_1(D_{14})$ Cancellation.**
    Fixing $a_3 = 0$ removes $a_3$ as a Left pivot, so we promote $a_7$ to the active pivot on the
    Right side. In $W_{14}$, $e_{11}$ enters as $-e_{11} = -(e_{11,0} + a_7)$, so
    $W_{14} = D_{14}(a_{11}, a_{12}) - a_7$. Meanwhile, in $W_9$, $e_9 = 0$ gives
-   $\operatorname{Ch}(0, e_8, e_7) = e_7 = a_7$, so $W_9 = W_{9,0} - a_7 - a_2$.
+   $\mathrm{Ch}(0, e_8, e_7) = e_7 = a_7$, so $W_9 = W_{9,0} - a_7 - a_2$.
    Substituting both into $\rho_{16} = W_{16} - \sigma_1(W_{14}) - W_9 - \sigma_0(W_1) - W_0 = 0$,
    the linear $+a_7$ from $-W_9$ and the $-\sigma_1(D_{14} - a_7)$ combine into
    $$Q_1(u) := \sigma_1(u) + u \quad \text{at } u = D_{14}(a_{11}, a_{12}) - a_7,$$
@@ -132,7 +132,7 @@ Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
    - **Universal target independence:** `g_q0_inv`, `g_q1_inv`, and `g_left_a1` depend **only on
      `IV`** and $T_{16}^*$ — they do not depend on the 256-bit target $H^*$ at all.
    - **Phase 2 (1266.26 s on 16 vCPUs):** Sweep $(a_{11}, a_{12})$, invert $Q_1$ to get $a_7$, look
-     up $a_1 = \text{g\_left\_a1}[T_{17}]$ to satisfy $\rho_{16} = \rho_{17} = 0$ simultaneously,
+     up `a1 = g_left_a1[T17]` to satisfy $\rho_{16} = \rho_{17} = 0$ simultaneously,
      invert $Q_0(W_3)$ to get $a_4$ (satisfying $\rho_{18} = 0$ with **zero $\beta$-filter loss**,
      yielding **2.16 million exact 19-round solutions/sec**), and check $\rho_{19} = 0$.
 
