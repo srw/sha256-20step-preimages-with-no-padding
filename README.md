@@ -38,11 +38,12 @@ Compress_20(IV, W[0..15]) = deadbeefcafebabe0123456789abcdeffedcba98765432101357
 | 16 | hash function, with padding | Homsirikamol et al., CISIM 2012 ([ePrint 2012/421](https://eprint.iacr.org/2012/421)) | SAT, ~1 h on Core i7 |
 | 17 | hash function, with padding | McDair, *cryptography* mailing list, March 2024 | 3 witnesses posted, no method |
 | 17–18 | compression function | Davydov et al., 2025 | SAT, seconds (all-zero target) |
+| **18** | **compression function** | **this repository (`src/validate_sub32_cascades.py`)** | **$O(1)$ ($\approx 1.58$ trials, $\sim 3.5\text{ ms}$ on 1 CPU core, $1.06\text{ MB}$ RAM)** |
 | 19 | compression function | Zaikin, *Constraints* 2026; Basra, Sept 2026 | SAT (18.5 h on 192 cores); algebraic ($\sim 2^{29}$ lookups) |
 | **19** | **compression function** | **this repository (`src/carry_tree_bridge.c`)** | **$2^{16}$ MITM steps in $2.56\text{ MB}$ RAM ($\sim 6.8\text{ s}$ on 1 CPU core, $<1\text{ ms}$ init)** |
 | 19 | hash function, with padding | [srw/sha256-19step-preimages-with-padding](https://github.com/srw/sha256-19step-preimages-with-padding) | $\sim 2^{25.3}$ chain starts (~7–22 s median on 1 core) |
 | 20 | compression function | Basra, Sept 2026 ([kamb-code/sha256-r19-preimage](https://github.com/kamb-code/sha256-r19-preimage)) | $\sim 2^{45.4}$ table lookups (2.45 and 16.16 GPU-hours) |
-| **20** | **compression function** | **this repository (`src/solve20_zero_a3.c`)** | **$\sim 2^{32.0}$ bridge matches / $\sim 2^{33}$ work (21.1 min on 16 CPU vCPUs); $\sim 2^{24}\text{–}2^{25.6}$ via sub-$2^{32}$ cascade (`src/validate_sub32_cascades.py`)** |
+| **20** | **compression function** | **this repository (`src/solve20_zero_a3.c`, `src/carry_tree_bridge.c`)** | **$\sim 2^{32.0}$ bridge matches / $\sim 2^{33}$ work (21.1 min on 16 CPU vCPUs; $1.06\text{ MB}$ Carry-Tree replaces $32\text{ GiB}$ $Q_0^{-1}/Q_1^{-1}$ tables with $5.31\times$ higher yield)** |
 
 ## Verify (Python 3, standard library only)
 
@@ -60,8 +61,8 @@ python3 src/validate_zero_a3.py
 ```
 
 Verify the memoryless ($1.06\text{ MB}$) Carry-Tree $Q_0^{-1}/Q_1^{-1}$ solvers and the 18-, 19-, and
-20-step sub-$2^{32}$ algebraic decoupling cascades ($O(1)$ at 18 steps, $2^{16}$ at 19 steps, and
-$2^{24}\text{–}2^{25.6}$ at 20 steps):
+20-step algebraic decoupling cascades ($O(1)$ at 18 steps, $2^{16}$ at 19 steps, and $\sim 2^{32}$ at
+20 steps):
 
 ```bash
 python3 src/validate_sub32_cascades.py
@@ -160,24 +161,30 @@ Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
      invert $Q_0(W_3)$ to get $a_4$ (satisfying $\rho_{18} = 0$ with **zero $\beta$-filter loss**,
      yielding **2.16 million exact 19-round solutions/sec**), and check $\rho_{19} = 0$.
 
-5. **Memoryless ($1.06\text{ MB}$) Carry-Tree Solvers & Sub-$2^{32}$ Complexity Hierarchy (`src/carry_tree_bridge.c`, `src/validate_sub32_cascades.py`).**
+5. **Memoryless ($1.06\text{ MB}$) Carry-Tree Solvers & 18/19/20/21-Step Complexity Hierarchy (`src/carry_tree_bridge.c`, `src/validate_sub32_cascades.py`).**
    - **Eliminating $32\text{ GiB}$ of $Q_0^{-1}/Q_1^{-1}$ tables and $81.1\%$ overwrite loss:**
      In $y = (\sigma_b(x) \pm x) \bmod 2^{32}$, the $\mathbb{F}_2$-linear operator
      $L_b(x) = \sigma_b(x) \oplus x$ satisfies $L_b(x) = y \oplus c$, where the carry/borrow bit
      $c_{i+1}$ is deterministic ($c_{i+1} = c_i$) on half of all bits and branches with $x_i = c_{i+1}$
      fixed on the other half. Splitting the carry tree into two 16-bit halves coupled by $1.06\text{ MB}$
-     of $\mathbb{F}_2$-pseudoinverse tables (`P0_low/high`, `P1_low/high`, built in $0.66\text{ ms}$)
+     of $\mathbb{F}_2$-pseudoinverse tables (`P0_low/high`, `P1_low/high`, built in $<1\text{ ms}$)
      recovers **100% of preimages** (average $1.000$ preimage per random target vs. $0.6337$ in a
      single-slot $16\text{ GiB}$ array, boosting 3-step yield by **$5.31\times$**).
-   - **18-, 19-, and 20-step complexity hierarchy (compression function, $R - 16$ schedule equations):**
-     - **18 steps (2 equations, 64 bits):** Solved in **$O(1)$ ($\sim 3.5\text{ ms}$)** via direct
-       2-level $Q_0^{-1}$ cascades with zero search loop.
+   - **18-, 19-, 20-, and 21-step complexity hierarchy (compression function, $R - 16$ schedule equations):**
+     - **18 steps (2 equations, 64 bits):** Solved in **$O(1)$ ($\approx 1.58$ trials, $\sim 3.5\text{ ms}$)**
+       in $1.06\text{ MB}$ RAM via direct $Q_0^{-1}/Q_1^{-1}$ inversion with zero search loop.
      - **19 steps (3 equations, 96 bits):** Solved in **$2^{16}$ MITM steps ($\sim 6.8\text{ s}$ on 1
        core) and $2.56\text{ MB}$ RAM** (`src/carry_tree_bridge.c`), matching all 256 output bits of
        `Compress_19(IV, W[0..15]) == target`.
-     - **20 steps (4 equations, 128 bits):** Reduced to **$2^{24}\text{–}2^{25.6}$ operations** by
-       combining bi-directional $Q_0^{-1}/Q_1^{-1}$ MITM with $O(1)$ pivot cascades and $+1$-monic
-       linearity (`src/validate_sub32_cascades.py`).
+     - **20 steps (4 equations, 128 bits):** Solved in **$\sim 2^{32}$ bridge matches / $\sim 2^{33}$
+       work** (`21.1 min` on 16 vCPUs in `src/solve20_zero_a3.c`). Using the $1.06\text{ MB}$
+       Carry-Tree solver (`src/carry_tree_bridge.c`) eliminates the $32\text{ GiB}$ `g_q0_inv` /
+       `g_q1_inv` tables (reducing full-table RAM from $48\text{ GiB}$ to $16\text{ GiB}$, or allowing
+       any $2^{64}/M$ time-memory tradeoff down to $2.56\text{ MB}$ RAM) and verifies the 20-step
+       witness in **`0.21 ms`** (`3` Carry-Tree calls).
+     - **21 steps (5 equations, 160 bits):** Solved in **$\sim 2^{64}$ work** on the Zero-$a_3$
+       Manifold (with $a_{13}$ additionally free on the Right and $\rho_{19} = \rho_{20} = 0$ acting
+       as a 64-bit filter).
 
 ## Scope: Compression Function vs. Padded Hash Function at 20 Steps
 
@@ -187,11 +194,11 @@ Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
   $\mathrm{LSB}(W_{13}) = \mathtt{0x80}$). At 19 steps ($a_{12} \dots a_{19}$ fixed by the target),
   $W_{14}$ and $W_{15}$ linearly absorb $a_7$ and $a_8$ via $-e_{11}$ and $-e_{12}$, leaving enough
   Right degrees of freedom alongside the three Left pivots $(a_2, a_3, a_4)$.
-- **19 and 20 steps without padding ($2^{16}$ at 19 steps; $\sim 2^{33}$ / $\sim 2^{25.6}$ at 20 steps, solved here):**
+- **19 and 20 steps without padding ($2^{16}$ at 19 steps; $\sim 2^{32}$ bridge matches / $\sim 2^{33}$ work at 20 steps, solved here):**
   For the 19- and 20-step compression functions ($W_0 \dots W_{15}$ unconstrained), the Zero-$a_3$
   bridge solves 19 steps in $2^{16}$ operations ($2.56\text{ MB}$ RAM) by sweeping $a_{11}$ against a
-  $2^{16}$-entry Left table, and solves 20 steps by sweeping $(a_{11}, a_{12})$ with $a_7$ as the
-  $Q_1^{-1}$ pivot.
+  $2^{16}$-entry Left table, and solves 20 steps in $\sim 2^{32}$ bridge matches by sweeping
+  $(a_{11}, a_{12})$ with $a_7$ as the $Q_1^{-1}$ pivot.
 - **Why single-block 20 steps *with* padding is harder ($\sim 2^{64}$ single-block, $\sim 2^{39}$ two-block):**
   Imposing $W_{14} = 0$ and $W_{15} = 440$ at 20 steps pins two of the three Right variables
   $(a_7, a_{11}, a_{12})$, collapsing the $2^{64}$ Right search space on the fixed Zero-$a_3$
