@@ -1,6 +1,8 @@
 .DS_Store
 solve20_zero_a3
 src/solve20_zero_a3
+carry_tree_bridge
+src/carry_tree_bridge
 *.o
 *.dSYM/
 __pycache__/
