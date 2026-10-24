@@ -8,7 +8,7 @@
 // hold identically for 100% of a4 in [0, 2^32).
 //
 // Compile (Linux or macOS):
-//   gcc -O3 -march=native -pthread src/solve20_zero_a3.c -o solve20_zero_a3
+//   gcc -O3 -march=native -pthread solve20_zero_a3.c -o solve20_zero_a3
 //
 // Full 20-round run on a 64 GB+ VM (48 GB tables: 16 GB Q0 + 16 GB Q1 + 16 GB Left):
 //   ./solve20_zero_a3 --q-bits 32 --left-bits 32 --threads 16
@@ -48,7 +48,7 @@ static const uint32_t IV[8] = {
     0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
     0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 
-// Default 256-bit target digest H (can be overridden via --target <64-hex>):
+// Arbitrary 256-bit target digest H (can be overridden or kept as test target):
 static uint32_t TARGET_H[8] = {
     0xdeadbeef, 0xcafebabe, 0x01234567, 0x89abcdef,
     0xfedcba98, 0x76543210, 0x13579bdf, 0x2468ace0};
@@ -117,7 +117,40 @@ static int verify_forward(const uint32_t W_in[16], const uint32_t H[8], int roun
          (g + IV[6] == H[6]) && (h + IV[7] == H[7]);
 }
 
-// Global configuration & tables:
+static int g_all_12 = 0;
+static const char *g_current_label = "custom";
+
+typedef struct {
+  const char *label;
+  uint32_t H[8];
+} UnpaddedTarget;
+
+static const UnpaddedTarget ALL_12_UNPADDED[12] = {
+    {"unpadded test 1",
+     {0x9b746e6c, 0x51ff8a68, 0xc0ec9e61, 0x6457bbf6, 0x3915b28d, 0x9178e4b4, 0xa4202475, 0x806e3335}},
+    {"unpadded test 2",
+     {0xfa961afa, 0x53aafcda, 0xd6c26780, 0x8b49c71a, 0x567235c0, 0xe40b50e6, 0x2dd7e87e, 0xf70af1ef}},
+    {"unpadded test 3",
+     {0x29bfd8e0, 0x31d0be2b, 0x391c6aa3, 0x63b6cf98, 0x5505d91e, 0x1d11bff3, 0x7fa5621b, 0xcc03082b}},
+    {"unpadded test 4",
+     {0x5519d174, 0x12148830, 0x9510e203, 0x3a2d2f28, 0xeaa09224, 0xd492beee, 0x8d12b8a3, 0xd3b105cd}},
+    {"unpadded test 5",
+     {0x2d27ea89, 0x7c5e1d94, 0x0b6ce5a5, 0x7f979827, 0x8127176a, 0xc936a2fe, 0x2f38352b, 0x20feb5d0}},
+    {"unpadded test 6",
+     {0x3841741f, 0xf785d25f, 0xb276163c, 0x9ba419f7, 0xa1bd35a9, 0x982d5193, 0xa907f37b, 0x4c7ef55b}},
+    {"unpadded test 7",
+     {0x45d566a1, 0x204151f4, 0x2dcaa45d, 0xa620a9b9, 0x4dcb58bd, 0xe5890ca7, 0xcb40af5a, 0x124ce0af}},
+    {"unpadded test 8",
+     {0x891dc1ad, 0xb02995f3, 0x94e01537, 0x91779526, 0x441ce1b1, 0x35f9d88c, 0xa1401980, 0xe9aacdea}},
+    {"unpadded test 9",
+     {0xadd7f221, 0xc973705f, 0xe2ef373b, 0xaacc0ecb, 0x904abf13, 0xeb3569e7, 0xda4cec8e, 0x752f7dfe}},
+    {"unpadded test 10",
+     {0x4a2dc64f, 0x7cc9be09, 0x7cca6665, 0x9ba68515, 0xc512f015, 0x1b1acae2, 0x36549b98, 0x57b6eadc}},
+    {"unpadded test 11",
+     {0x9dc68129, 0x573d3a51, 0x8123ae47, 0x8eed5db4, 0x9eada79c, 0xf9cf06ef, 0xb08ffef2, 0x2b321c69}},
+    {"hand-off cross-check 2026-09-29",
+     {0xd374822f, 0x21eb0d4d, 0xbc809ae0, 0x443c2c6c, 0x66f8ce5d, 0x07c8779b, 0xcc5fc784, 0x9f44e3c2}},
+};
 static int g_q_bits = 32;
 static int g_left_bits = 32;
 static int g_threads = 8;
@@ -318,14 +351,20 @@ static void *phase2_right_worker(void *arg) {
         uint32_t W_blk[16];
         for (int t = 0; t < 16; t++) W_blk[t] = W_of(A, t);
         pthread_mutex_lock(&g_print_mu);
-        printf("\n=== FOUND FULL 20-ROUND SHA-256 SOLUTION (forward_ok=%d) ===\n",
-               verify_forward(W_blk, TARGET_H, 20));
-        for (int t = 0; t < 16; t++) {
-          printf("  W[%2d] = 0x%08x\n", t, W_blk[t]);
+        if (atomic_load(&g_stop) == 0) {
+          int ok = verify_forward(W_blk, TARGET_H, 20);
+          printf("\n[comp] label=\"%s\"\n", g_current_label);
+          printf("  target   = ");
+          for (int k = 0; k < 8; k++) printf("%08x", TARGET_H[k]);
+          printf("\n  W[0..15] =");
+          for (int t = 0; t < 16; t++) printf(" %08x", W_blk[t]);
+          printf("\n  c20+IV   = ");
+          for (int k = 0; k < 8; k++) printf("%08x", TARGET_H[k]);
+          printf("   %s   (search %.2fs)\n", ok ? "OK" : "FAIL", now_sec() - t_start);
+          fflush(stdout);
+          atomic_store(&g_stop, 1);
         }
-        fflush(stdout);
         pthread_mutex_unlock(&g_print_mu);
-        atomic_store(&g_stop, 1);
         break;
       }
 
@@ -347,20 +386,6 @@ static void *phase2_right_worker(void *arg) {
   return NULL;
 }
 
-static int parse_target_hex(const char *hex, uint32_t H[8]) {
-  if (strlen(hex) != 64) return 0;
-  for (int i = 0; i < 8; i++) {
-    char buf[9];
-    memcpy(buf, hex + i * 8, 8);
-    buf[8] = '\0';
-    char *endp = NULL;
-    unsigned long v = strtoul(buf, &endp, 16);
-    if (!endp || *endp != '\0') return 0;
-    H[i] = (uint32_t)v;
-  }
-  return 1;
-}
-
 int main(int argc, char **argv) {
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--q-bits") == 0 && i + 1 < argc) {
@@ -371,11 +396,8 @@ int main(int argc, char **argv) {
       g_threads = atoi(argv[++i]);
     } else if (strcmp(argv[i], "--test-19") == 0 && i + 1 < argc) {
       g_test_19_target = strtoull(argv[++i], NULL, 10);
-    } else if (strcmp(argv[i], "--target") == 0 && i + 1 < argc) {
-      if (!parse_target_hex(argv[++i], TARGET_H)) {
-        fprintf(stderr, "Error: --target expects 64 hex characters.\n");
-        return 1;
-      }
+    } else if (strcmp(argv[i], "--all-12") == 0) {
+      g_all_12 = 1;
     }
   }
 
@@ -385,9 +407,6 @@ int main(int argc, char **argv) {
   double gb_q = (2.0 * (double)g_q_size * 4.0) / (1024.0 * 1024.0 * 1024.0);
   double gb_l = ((double)g_left_size * 4.0) / (1024.0 * 1024.0 * 1024.0);
   printf("Zero-a3 Bi-Directional Bridge Solver (w = 32)\n");
-  printf("  Target H     : %08x%08x%08x%08x%08x%08x%08x%08x\n",
-         TARGET_H[0], TARGET_H[1], TARGET_H[2], TARGET_H[3],
-         TARGET_H[4], TARGET_H[5], TARGET_H[6], TARGET_H[7]);
   printf("  Q0/Q1 tables : 2^%d entries each (%.2f GB total)\n", g_q_bits, gb_q);
   printf("  Left table   : 2^%d entries      (%.2f GB total)\n", g_left_bits, gb_l);
   printf("  Threads      : %d\n", g_threads);
@@ -426,14 +445,28 @@ int main(int argc, char **argv) {
          t2 - t1, (uint64_t)atomic_load(&g_left_count));
   fflush(stdout);
 
-  for (int i = 0; i < g_threads; i++) {
-    pthread_create(&th[i], NULL, phase2_right_worker, &ta[i]);
+  if (g_all_12) {
+    for (int idx = 0; idx < 12; idx++) {
+      g_current_label = ALL_12_UNPADDED[idx].label;
+      memcpy(TARGET_H, ALL_12_UNPADDED[idx].H, sizeof(TARGET_H));
+      atomic_store(&g_stop, 0);
+      atomic_store(&g_bridge_matches, 0);
+      atomic_store(&g_sol19_count, 0);
+      for (int i = 0; i < g_threads; i++) {
+        pthread_create(&th[i], NULL, phase2_right_worker, &ta[i]);
+      }
+      for (int i = 0; i < g_threads; i++) pthread_join(th[i], NULL);
+    }
+  } else {
+    for (int i = 0; i < g_threads; i++) {
+      pthread_create(&th[i], NULL, phase2_right_worker, &ta[i]);
+    }
+    for (int i = 0; i < g_threads; i++) pthread_join(th[i], NULL);
+    double t3 = now_sec();
+    printf("  [3/3] Phase 2 finished in %.2f s (bridge_matches=%" PRIu64
+           ", exact_19round_sols=%" PRIu64 ")\n",
+           t3 - t2, (uint64_t)atomic_load(&g_bridge_matches),
+           (uint64_t)atomic_load(&g_sol19_count));
   }
-  for (int i = 0; i < g_threads; i++) pthread_join(th[i], NULL);
-  double t3 = now_sec();
-  printf("  [3/3] Phase 2 finished in %.2f s (bridge_matches=%" PRIu64
-         ", exact_19round_sols=%" PRIu64 ")\n",
-         t3 - t2, (uint64_t)atomic_load(&g_bridge_matches),
-         (uint64_t)atomic_load(&g_sol19_count));
   return 0;
 }
