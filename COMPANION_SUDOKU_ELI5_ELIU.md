@@ -426,4 +426,4 @@ python3 verify_all_witnesses.py
 
 ### Disclosure & Attribution
 
-Building upon K. S. Basra's selector-saturation and backward padding-absorption framework (`https://github.com/kamb-code/sha256-r19-preimage`), the algebraic discoveries (closed-form $O(1)$ $W_{13}$ padding pivot inversion, Theorem 1 / Carry-Sudoku, Theorem 2 / closed-form $\mathbb{F}_2$ upper-half reconstruction, Slot-Sudoku tables, and the Zero-$a_3$ bi-directional bridge), C/CUDA solvers, and preimage witnesses in this work were discovered and developed using **Google DeepMind Gemini 4 Argon**.
+Building upon K. S. Basra's selector-saturation and backward padding-absorption framework (`https://github.com/kamb-code/sha256-r19-preimage`), the algebraic discoveries (closed-form $O(1)$ $W_{13}$ padding pivot inversion, Theorem 1 / Carry-Sudoku, Theorem 2 / closed-form $\mathbb{F}_2$ upper-half reconstruction, Slot-Sudoku tables, and the Zero-$a_3$ bi-directional bridge), C/CUDA solvers, preimage witnesses, and manuscript in this work were discovered, developed, and written using **Google DeepMind Gemini 4 Argon**.
