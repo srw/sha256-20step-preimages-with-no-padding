@@ -222,6 +222,8 @@ Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
 ## Credit and Licence
 
 Context shaping is due to K. S. Basra ([kamb-code/sha256-r19-preimage](https://github.com/kamb-code/sha256-r19-preimage));
-please cite his work alongside this repository (see `CITATION.cff`). This work was developed with
-AI assistance under the direction and review of the repository owner.
+please cite his work alongside this repository (see `CITATION.cff`). The Zero-$a_3$ Bi-Directional
+$Q_0/Q_1$ Bridge, Carry-Sudoku / Slot-Sudoku solvers, and preimage witnesses in this repository and
+[`PAPER_19_20_PADDED_SHA256_final-v1.pdf`](PAPER_19_20_PADDED_SHA256_final-v1.pdf) were discovered and
+developed using **Google DeepMind Gemini 4 Argon** under the direction and review of the repository owner (`srw@egont.xyz`).
 Released under the MIT licence.

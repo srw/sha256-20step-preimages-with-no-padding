@@ -1,0 +1,21 @@
+# Demonstrations: SHA-256 reduced to 20 steps (every compression call), standard IV and padding.
+[demo] target = SHA-256("abc") = FIPS 180 test vector
+  message_hex = edf6e70a7001ae71b900f18119aaa1fdf6c1179b4268891262a9539be04d41236685e0c102e0ad23165e8b7157669819302ddcb3c68226
+  sha256_20   = ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+
+[demo] target = SHA-256("") (empty string); message = 64-byte ASCII block + 55 computed bytes (119 bytes)
+  message_repr = b'This first block is plain text; the second one was computed.....\xdf(\xe2\x1b\xb6\xb6\x12\x02\xba\x87\xba\xa7 \x96\xee\n:\xc3%\xcf\x1f\x12\x05n|\xfe*\xe1s[M\x10k\x8fn\x0b"\xeb\x9bPN\xd96\x89\x91\x94K\n\x11Z\x93O\x17\xc2\xc4'
+  message_hex  = 5468697320666972737420626c6f636b20697320706c61696e20746578743b20746865207365636f6e64206f6e652077617320636f6d70757465642e2e2e2e2edf28e21bb6b61202ba87baa72096ee0a3ac325cf1f12056e7cfe2ae1735b4d106b8f6e0b22eb9b504ed9368991944b0a115a934f17c2c4
+  sha256_20    = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+[demo19] target = SHA-256("") (empty string, 19 steps); message = 64-byte ASCII block + 55 computed bytes (119 bytes)
+  message_hex  = 5468697320666972737420626c6f636b20697320706c61696e20746578743b20746865207365636f6e64206f6e652077617320636f6d70757465642e2e2e2e2efe409cc930128a720481f86c0503d7a018519a129df449139720bb5eef520895f8b515685bb404817be301880f0caabe02fc9e5f1c95c0
+  sha256_19    = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+[demo19_zero] target = 0^256 (all-zero digest, 19 steps, exact a5 = a6 = 0x3dbb85b8, free a10)
+  message_hex  = fc0c9d8eafb2fa329af316940c42a5eb9773cec39e4f7e3961826287ae767638f92d4ce5fc5eb8cabd7606409364dda27a6c1bb5220246
+  sha256_19    = 0000000000000000000000000000000000000000000000000000000000000000
+
+[regression20] Stage-2 Carry-Sudoku completeness regression witness (20 steps, exact a5 = a6 = 0x4ade1afa)
+  message_hex  = edf6e70a7001ae71b900f18119aaa1fdf6c1179b4268891262a9539be04d41236685e0c102e0ad23165e8b7157669819308ddcb396e29a
+  sha256_20    = a36f9d5c8dd82584bf46d3d86f76f55325f1d90c50846e3b12f7f066f2c015ad

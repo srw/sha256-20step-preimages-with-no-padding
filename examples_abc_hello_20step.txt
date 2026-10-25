@@ -1,0 +1,8 @@
+# Two illustrative 55-byte preimages (the targets are the ordinary 64-step SHA-256 digests of "abc" and "hello").
+[padded] label="abc"
+  target      = ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+  message_hex = edf6e70a7001ae71b900f18119aaa1fdf6c1179b4268891262a9539be04d41236685e0c102e0ad23165e8b7157669819302ddcb3c68226
+
+[padded] label="hello"
+  target      = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+  message_hex = 3a11bd11262fcee01e4a184372643bdbe4ba65651b730b0b8fe49c7648866d52c60847db2400ef72c859e2b0366e470fae3cf0891313b4

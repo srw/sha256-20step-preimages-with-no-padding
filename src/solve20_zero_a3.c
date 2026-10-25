@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 static inline uint32_t rotr(uint32_t x, int n) {
-  return (x >> n) | (x << (32 - n));
+  return (x >> (n & 31)) | (x << ((32 - (n & 31)) & 31));
 }
 #define S0(x) (rotr(x, 2) ^ rotr(x, 13) ^ rotr(x, 22))
 #define S1(x) (rotr(x, 6) ^ rotr(x, 11) ^ rotr(x, 25))
@@ -194,9 +194,9 @@ static void *build_q_worker(void *arg) {
     uint32_t u = (uint32_t)u64;
     if (u == 0xffffffffu) continue;
     uint32_t y0 = Q0(u);
-    if ((uint64_t)y0 < q_lim) g_q0_inv[y0] = u;
+    if ((uint64_t)y0 < q_lim) __atomic_store_n(&g_q0_inv[y0], u, __ATOMIC_RELAXED);
     uint32_t y1 = Q1(u);
-    if ((uint64_t)y1 < q_lim) g_q1_inv[y1] = u;
+    if ((uint64_t)y1 < q_lim) __atomic_store_n(&g_q1_inv[y1], u, __ATOMIC_RELAXED);
   }
   return NULL;
 }
@@ -235,7 +235,7 @@ static void *phase1_left_worker(void *arg) {
     uint32_t W2 = W_of(A, 2);
     uint32_t L17 = s0(W2) + W1;
     if ((uint64_t)L17 < l_lim) {
-      g_left_a1[L17] = a1;
+      __atomic_store_n(&g_left_a1[L17], a1, __ATOMIC_RELAXED);
       local_cnt++;
     }
   }
@@ -398,9 +398,16 @@ int main(int argc, char **argv) {
       g_test_19_target = strtoull(argv[++i], NULL, 10);
     } else if (strcmp(argv[i], "--all-12") == 0) {
       g_all_12 = 1;
+    } else {
+      fprintf(stderr, "Error: unknown or incomplete option '%s'\n", argv[i]);
+      return 1;
     }
   }
 
+  if (g_q_bits < 1 || g_q_bits > 32 || g_left_bits < 1 || g_left_bits > 32 || g_threads < 1 || g_threads > 4096) {
+    fprintf(stderr, "Error: --q-bits and --left-bits must be in [1, 32] and --threads in [1, 4096].\n");
+    return 1;
+  }
   g_q_size = 1ULL << g_q_bits;
   g_left_size = 1ULL << g_left_bits;
 
