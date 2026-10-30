@@ -35,8 +35,8 @@ preimage after **`1266.26 s` (21.1 minutes)** (`4,316,790,709` bridge matches $\
 
 ## 2. Algebraic Formulation on the Zero-$a_3$ Manifold
 
-Using the $a$-sequence representation (see the companion 19-step note in
-[`srw/sha256-19step-preimages-with-padding`](https://github.com/srw/sha256-19step-preimages-with-padding)):
+Using the $a$-sequence representation (see the companion 19- and 20-step padded repository in
+[`srw/sha256-19-and-20-step-preimages-with-padding`](https://github.com/srw/sha256-19-and-20-step-preimages-with-padding)):
 $$e_t = a_t - \Sigma_0(a_{t-1}) - \mathrm{Maj}(a_{t-1}, a_{t-2}, a_{t-3}) + a_{t-4} \pmod{2^{32}},$$
 $$W_t = a_{t+1} - \Sigma_0(a_t) - \mathrm{Maj}(a_t, a_{t-1}, a_{t-2}) - e_{t-3} - \Sigma_1(e_t) - \mathrm{Ch}(e_t, e_{t-1}, e_{t-2}) - K_t \pmod{2^{32}}.$$
 
@@ -198,7 +198,7 @@ At $R = 19$ steps (`Compress_19(IV, W)`), the 256-bit target digest $H^*$ fixes 
 ## 7. Why Single-Block 20-Step Padded SHA-256 Requires a Different Regime
 
 In the companion repository
-[`srw/sha256-19step-preimages-with-padding`](https://github.com/srw/sha256-19step-preimages-with-padding),
+[`srw/sha256-19-and-20-step-preimages-with-padding`](https://github.com/srw/sha256-19-and-20-step-preimages-with-padding),
 we solved 19-step SHA-256 **with full FIPS 180-4 single-block padding** (55-byte messages, where
 $W_{14} = 0$, $W_{15} = \mathtt{0x000001b8} = 440$, and $\mathrm{LSB}(W_{13}) = \mathtt{0x80}$) in
 $\sim 2^{25.3}$ work on one CPU core. Why does moving from 19 steps to 20 steps change the padded

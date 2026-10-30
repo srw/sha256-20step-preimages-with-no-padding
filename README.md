@@ -11,8 +11,8 @@ and solves the 20-step compression preimage problem in **$\sim 2^{33}$ SHA-256-e
 (**21.1 minutes** of search on a 16-vCPU CPU VM after a **59.4 s** one-time target-independent table
 build of 48 GiB).
 
-For padded 19-step SHA-256 (full hash function with standard FIPS 180-4 padding), see the companion
-repository [srw/sha256-19step-preimages-with-padding](https://github.com/srw/sha256-19step-preimages-with-padding).
+For padded 19- and 20-step SHA-256 (full hash function with standard FIPS 180-4 padding), see the companion
+repository [srw/sha256-19-and-20-step-preimages-with-padding](https://github.com/srw/sha256-19-and-20-step-preimages-with-padding).
 **This builds on K. S. Basra's context-shaping framework**
 ([kamb-code/sha256-r19-preimage](https://github.com/kamb-code/sha256-r19-preimage)).
 
@@ -41,7 +41,7 @@ Compress_20(IV, W[0..15]) = deadbeefcafebabe0123456789abcdeffedcba98765432101357
 | **18** | **compression function** | **this repository (`src/validate_sub32_cascades.py`)** | **$O(1)$ ($\approx 1.58$ trials, $\sim 3.5\text{ ms}$ on 1 CPU core, $1.06\text{ MB}$ RAM)** |
 | 19 | compression function | Zaikin, *Constraints* 2026; Basra, Sept 2026 | SAT (18.5 h on 192 cores); algebraic ($\sim 2^{29}$ lookups) |
 | **19** | **compression function** | **this repository (`src/carry_tree_bridge.c`)** | **$2^{16}$ MITM steps in $2.56\text{ MB}$ RAM ($\sim 6.8\text{ s}$ on 1 CPU core, $<1\text{ ms}$ init)** |
-| 19 | hash function, with padding | [srw/sha256-19step-preimages-with-padding](https://github.com/srw/sha256-19step-preimages-with-padding) | $\sim 2^{25.3}$ chain starts (~7–22 s median on 1 core) |
+| 19–20 | hash function, with padding | [srw/sha256-19-and-20-step-preimages-with-padding](https://github.com/srw/sha256-19-and-20-step-preimages-with-padding) | 19-step: $\sim 2^{25.3}$ chain starts (~7–22 s median on 1 core); 20-step: `191.1 node-h` CPU / `8.98–22.16 GPU-h` L4 |
 | 20 | compression function | Basra, Sept 2026 ([kamb-code/sha256-r19-preimage](https://github.com/kamb-code/sha256-r19-preimage)) | $\sim 2^{45.4}$ table lookups (2.45 and 16.16 GPU-hours) |
 | **20** | **compression function** | **this repository (`src/solve20_zero_a3.c`, `src/carry_tree_bridge.c`)** | **$\sim 2^{32.0}$ bridge matches / $\sim 2^{33}$ work (21.1 min on 16 CPU vCPUs; $1.06\text{ MB}$ Carry-Tree replaces $32\text{ GiB}$ $Q_0^{-1}/Q_1^{-1}$ tables with $5.31\times$ higher yield)** |
 
@@ -188,8 +188,8 @@ Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
 
 ## Scope: Compression Function vs. Padded Hash Function at 20 Steps
 
-- **19 steps with padding ($\sim 2^{25.3}$, solved on 1 CPU core):**
-  In [srw/sha256-19step-preimages-with-padding](https://github.com/srw/sha256-19step-preimages-with-padding),
+- **19 and 20 steps with padding:**
+  In [srw/sha256-19-and-20-step-preimages-with-padding](https://github.com/srw/sha256-19-and-20-step-preimages-with-padding),
   we solved single-block 55-byte padded messages ($W_{14} = 0$, $W_{15} = \mathtt{0x000001b8}$,
   $\mathrm{LSB}(W_{13}) = \mathtt{0x80}$). At 19 steps ($a_{12} \dots a_{19}$ fixed by the target),
   $W_{14}$ and $W_{15}$ linearly absorb $a_7$ and $a_8$ via $-e_{11}$ and $-e_{12}$, leaving enough
@@ -224,6 +224,6 @@ Full mathematical details are in [`docs/NOTE.md`](docs/NOTE.md).
 Context shaping is due to K. S. Basra ([kamb-code/sha256-r19-preimage](https://github.com/kamb-code/sha256-r19-preimage));
 please cite his work alongside this repository (see `CITATION.cff`). The Zero-$a_3$ Bi-Directional
 $Q_0/Q_1$ Bridge, Carry-Sudoku / Slot-Sudoku solvers, and preimage witnesses in this repository and
-[`PAPER_19_20_PADDED_SHA256_final-v1.pdf`](PAPER_19_20_PADDED_SHA256_final-v1.pdf) were discovered and
+[srw/sha256-19-and-20-step-preimages-with-padding](https://github.com/srw/sha256-19-and-20-step-preimages-with-padding) were discovered and
 developed using **Google DeepMind Gemini 4 Argon** under the direction and review of the repository owner (`srw@egont.xyz`).
 Released under the MIT licence.

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this work, please cite it alongside our 19-step padded repository and K. S. Basra's context-shaping work."
+message: "If you use this work, please cite it alongside our 19- and 20-step padded repository and K. S. Basra's context-shaping work."
 title: "Preimages for 20-step SHA-256 compression function via Zero-a3 Bi-Directional Q0/Q1 Bridge"
 authors:
   - family-names: Wain
@@ -9,11 +9,11 @@ license: MIT
 repository-code: "https://github.com/srw/sha256-20step-preimages-with-no-padding"
 references:
   - type: software
-    title: "Preimages for 19-step SHA-256 with standard padding"
+    title: "Preimages for 19- and 20-step SHA-256 with standard padding"
     authors:
       - family-names: Wain
         given-names: Sebastian
-    repository-code: "https://github.com/srw/sha256-19step-preimages-with-padding"
+    repository-code: "https://github.com/srw/sha256-19-and-20-step-preimages-with-padding"
   - type: software
     title: "sha256-r19-preimage (Context Shaping for 19- and 20-Round SHA-256 Compression Preimages)"
     authors:
